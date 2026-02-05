@@ -1,50 +1,68 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import ProductCard from './components/ProductCard';
-import { products } from './data/products';
+import { useDispatch, useSelector } from 'react-redux';
+import { addItem } from './CartSlice';  // Use correct import
 
 const ProductList = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
   
-  // Get unique categories
-  const categories = ['all', ...new Set(products.map(product => product.category))];
+  // Sample products - AT LEAST 6 plants in 3+ categories
+  const products = [
+    // Tropical (2+ plants)
+    { id: 1, name: "Monstera", price: 29.99, category: "tropical", image: "url1" },
+    { id: 2, name: "Fiddle Leaf Fig", price: 39.99, category: "tropical", image: "url2" },
+    
+    // Succulents (2+ plants)
+    { id: 3, name: "Echeveria", price: 12.99, category: "succulents", image: "url3" },
+    { id: 4, name: "Aloe Vera", price: 15.99, category: "succulents", image: "url4" },
+    
+    // Flowering (2+ plants)
+    { id: 5, name: "Orchid", price: 34.99, category: "flowering", image: "url5" },
+    { id: 6, name: "Peace Lily", price: 24.99, category: "flowering", image: "url6" },
+    
+    // Add more for at least 6 per category if needed
+  ];
   
-  // Filter products by category
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const categories = ['all', 'tropical', 'succulents', 'flowering'];
+  
   const filteredProducts = selectedCategory === 'all' 
     ? products 
-    : products.filter(product => product.category === selectedCategory);
+    : products.filter(p => p.category === selectedCategory);
   
-  // Check if product is in cart
-  const isInCart = (productId) => {
-    return cartItems.some(item => item.id === productId);
-  };
-
+  const isInCart = (id) => cartItems.some(item => item.id === id);
+  
   return (
-    <div className="products-page">
-      <h1 className="page-title">Our Plants Collection</h1>
+    <div className="product-list">
+      <h1>Our Plants</h1>
       
-      {/* Category Filters */}
+      {/* Category filter buttons */}
       <div className="categories">
-        {categories.map(category => (
-          <button
-            key={category}
-            className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
-            onClick={() => setSelectedCategory(category)}
+        {categories.map(cat => (
+          <button 
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={selectedCategory === cat ? 'active' : ''}
           >
-            {category.charAt(0).toUpperCase() + category.slice(1)}
+            {cat}
           </button>
         ))}
       </div>
       
-      {/* Products Grid */}
+      {/* Products grid */}
       <div className="products-grid">
         {filteredProducts.map(product => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            isInCart={isInCart(product.id)}
-          />
+          <div key={product.id} className="product-card">
+            <img src={product.image} alt={product.name} />
+            <h3>{product.name}</h3>
+            <p>${product.price.toFixed(2)}</p>
+            <button
+              onClick={() => dispatch(addItem(product))}
+              disabled={isInCart(product.id)}
+            >
+              {isInCart(product.id) ? 'Added ✓' : 'Add to Cart'}
+            </button>
+          </div>
         ))}
       </div>
     </div>

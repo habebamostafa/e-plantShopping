@@ -8,7 +8,8 @@ const cartSlice = createSlice({
     totalPrice: 0
   },
   reducers: {
-    addToCart: (state, action) => {
+    // REQUIRED: addItem()
+    addItem: (state, action) => {
       const existingItem = state.items.find(item => item.id === action.payload.id);
       
       if (existingItem) {
@@ -24,7 +25,8 @@ const cartSlice = createSlice({
       );
     },
     
-    removeFromCart: (state, action) => {
+    // REQUIRED: removeItem()
+    removeItem: (state, action) => {
       state.items = state.items.filter(item => item.id !== action.payload);
       
       // Update totals
@@ -34,13 +36,29 @@ const cartSlice = createSlice({
       );
     },
     
+    // REQUIRED: updateQuantity()
+    updateQuantity: (state, action) => {
+      const { id, quantity } = action.payload;
+      const item = state.items.find(item => item.id === id);
+      
+      if (item) {
+        item.quantity = quantity;
+      }
+      
+      // Update totals
+      state.totalItems = state.items.reduce((total, item) => total + item.quantity, 0);
+      state.totalPrice = state.items.reduce((total, item) => 
+        total + (item.price * item.quantity), 0
+      );
+    },
+    
+    // Optional additional reducers
     incrementQuantity: (state, action) => {
       const item = state.items.find(item => item.id === action.payload);
       if (item) {
         item.quantity += 1;
       }
       
-      // Update totals
       state.totalItems = state.items.reduce((total, item) => total + item.quantity, 0);
       state.totalPrice = state.items.reduce((total, item) => 
         total + (item.price * item.quantity), 0
@@ -53,27 +71,20 @@ const cartSlice = createSlice({
         item.quantity -= 1;
       }
       
-      // Update totals
       state.totalItems = state.items.reduce((total, item) => total + item.quantity, 0);
       state.totalPrice = state.items.reduce((total, item) => 
         total + (item.price * item.quantity), 0
       );
-    },
-    
-    clearCart: (state) => {
-      state.items = [];
-      state.totalItems = 0;
-      state.totalPrice = 0;
     }
   }
 });
 
 export const { 
-  addToCart, 
-  removeFromCart, 
+  addItem,          // REQUIRED
+  removeItem,       // REQUIRED
+  updateQuantity,   // REQUIRED
   incrementQuantity, 
-  decrementQuantity, 
-  clearCart 
+  decrementQuantity 
 } = cartSlice.actions;
 
 export default cartSlice.reducer;
